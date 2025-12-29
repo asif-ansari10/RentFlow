@@ -1,0 +1,15 @@
+{
+  "crons": [
+    {
+      "path": "/api/cron/generate-rents",
+      "schedule": "0 0 1 * *"
+    },{
+      "path": "/api/cron/electricity-reminder",
+      "schedule": "0 0 * * *"
+    },
+    {
+      "path": "/api/cron/agreement-reminder",
+      "schedule": "0 0 * * *"
+    }
+  ]
+}
