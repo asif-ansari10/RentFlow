@@ -58,6 +58,9 @@ export async function POST(req) {
     /* ---------- OPTIONAL FLAGS ---------- */
     const electricityEnabled = data.electricityEnabled === "true";
 
+    const startThisMonth = data.startThisMonth === "true";
+
+
     const rentIncreaseEnabled =
       data.increasePercentage &&
       data.increaseAfter &&
@@ -123,78 +126,47 @@ export async function POST(req) {
 
 
 /* ---------- FIRST RENT ---------- */
-// await Rent.create({
-//   userId: session.user.id,
 
-//   // ✅ FIX: copy tenant photo correctly
-//   photoUrl: tenant.photoUrl || null,
-//   tenantId: tenant._id,
-//   tenantName: tenant.name,
-
-//   amount: tenant.rent.monthly,
-//   dueDate: new Date(),
-//   month: new Date().getMonth() + 1,
-//   year: new Date().getFullYear(),
-  
-//   status: "pending",
-//     paidAmount: 0,
-//   dueNextMonth: { amount: 0 },
-//   previousDue: 0,
-
-//    electricityReminderSent:
-//     tenant.electricity?.notifyBeforeBilling === true
-//       ? false   // reminder allowed, not yet sent
-//       : true,   // reminder disabled → mark as already sent
-
-
-//   // 🔌 ELECTRICITY SNAPSHOT
-//   electricity: {
-//     enabled: tenant.electricity?.enabled || false,
-//     unitCost: tenant.electricity?.unitCost || 0,
-//     unitsConsumed: 0,        // future meter reading
-//     electricityAmount: 0,    // future calculation
-//     calculated: false,
-//   },
-// });
-
-
-// current date
 const now = new Date();
 
-// calculate next month
-let rentMonth = now.getMonth() + 2; // next month (1–12)
-let rentYear = now.getFullYear();
+let rentMonth;
+let rentYear;
 
-if (rentMonth === 13) {
-  rentMonth = 1;
-  rentYear += 1;
+// ✅ If checkbox ON → current month
+if (startThisMonth) {
+  rentMonth = now.getMonth() + 1;
+  rentYear = now.getFullYear();
+} 
+// ❌ Else → next month (default)
+else {
+  rentMonth = now.getMonth() + 2;
+  rentYear = now.getFullYear();
+
+  if (rentMonth === 13) {
+    rentMonth = 1;
+    rentYear += 1;
+  }
 }
 
-// billing day (fallback = 1)
+// billing day (safe fallback)
 const billingDay = tenant.rent.billingDate || 1;
 
-/**
- * ✅ IMPORTANT FIX:
- * Create date in UTC to avoid IST → UTC shift
- */
+// ✅ create date in UTC (prevents timezone bug)
 const dueDate = new Date(Date.UTC(
   rentYear,
   rentMonth - 1,
   billingDay,
-  0, 0, 0   // midnight UTC
+  0, 0, 0
 ));
 
 await Rent.create({
   userId: session.user.id,
-
   tenantId: tenant._id,
   tenantName: tenant.name,
   photoUrl: tenant.photoUrl || null,
 
-  // 💰 base rent only
   amount: tenant.rent.monthly,
-
-  dueDate,               // ✅ FIXED
+  dueDate,
   month: rentMonth,
   year: rentYear,
 
@@ -203,13 +175,11 @@ await Rent.create({
   dueNextMonth: { amount: 0 },
   previousDue: 0,
 
-  // 🔔 electricity reminder logic
   electricityReminderSent:
     tenant.electricity?.notifyBeforeBilling === true
-      ? false   // reminder allowed
-      : true,   // reminder disabled → mark as sent
+      ? false
+      : true,
 
-  // 🔌 electricity snapshot
   electricity: {
     enabled: tenant.electricity?.enabled || false,
     unitCost: tenant.electricity?.unitCost || 0,
@@ -218,7 +188,6 @@ await Rent.create({
     calculated: false,
   },
 });
-
 
 
     return NextResponse.json({ success: true });

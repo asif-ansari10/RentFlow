@@ -38,52 +38,56 @@ export default function AddTenantPage() {
     setForm((prev) => ({ ...prev, [key]: value }));
 
   const [photo, setPhoto] = useState(null);
-const [agreementFile, setAgreementFile] = useState(null);
-const [electricityEnabled, setElectricityEnabled] = useState(false);
-const [unitCost, setUnitCost] = useState("");
-const [notifyBeforeBilling, setNotifyBeforeBilling] = useState(false);
+  const [agreementFile, setAgreementFile] = useState(null);
+  const [electricityEnabled, setElectricityEnabled] = useState(false);
+  const [unitCost, setUnitCost] = useState("");
+  const [notifyBeforeBilling, setNotifyBeforeBilling] = useState(false);
+  const [startThisMonth, setStartThisMonth] = useState(false);
 
-async function handleSubmit(e) {
-  e.preventDefault();
 
-  if (submitting) return;
-  setSubmitting(true);
+  async function handleSubmit(e) {
+    e.preventDefault();
 
-  try {
-    const fd = new FormData();
+    if (submitting) return;
+    setSubmitting(true);
 
-    Object.entries(form).forEach(([k, v]) => fd.append(k, v));
+    try {
+      const fd = new FormData();
 
-    if (photo) fd.append("photo", photo);
-    if (agreementFile) fd.append("agreementFile", agreementFile);
+      Object.entries(form).forEach(([k, v]) => fd.append(k, v));
 
-    fd.append("electricityEnabled", electricityEnabled);
-    fd.append("unitCost", unitCost);
-    fd.append("notifyBeforeBilling", notifyBeforeBilling);
+      if (photo) fd.append("photo", photo);
+      if (agreementFile) fd.append("agreementFile", agreementFile);
 
-    const res = await fetch("/api/tenants", {
-      method: "POST",
-      body: fd,
-    });
+      fd.append("electricityEnabled", electricityEnabled);
+      fd.append("unitCost", unitCost);
+      fd.append("notifyBeforeBilling", notifyBeforeBilling);
+      fd.append("startThisMonth", startThisMonth);
 
-    const data = await res.json();
 
-    if (!res.ok) {
-      toast.error(data.message || "Failed to add tenant");
+      const res = await fetch("/api/tenants", {
+        method: "POST",
+        body: fd,
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        toast.error(data.message || "Failed to add tenant");
+        setSubmitting(false);
+        return;
+      }
+
+      toast.success("Tenant added successfully 🎉");
+      setTimeout(() => router.push("/tenants"), 800);
+
+    } catch (err) {
+      console.error(err);
+      toast.error("Something went wrong");
+    } finally {
       setSubmitting(false);
-      return;
     }
-
-    toast.success("Tenant added successfully 🎉");
-    setTimeout(() => router.push("/tenants"), 800);
-
-  } catch (err) {
-    console.error(err);
-    toast.error("Something went wrong");
-  } finally {
-    setSubmitting(false);
   }
-}
 
 
 
@@ -146,61 +150,61 @@ async function handleSubmit(e) {
               </label>
             </div>
 
-              <div className="md:col-span-2">
-    <label className="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">
-      Property Address
-    </label>
-    <textarea
-      rows={3}
-      value={form.address}
-      onChange={(e) => update("address", e.target.value)}
-      placeholder="House / Flat No, Street, Area, City, State"
-      className="w-full rounded-xl border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-950 px-4 py-2.5 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 outline-none"
-    />
-  </div>
+            <div className="md:col-span-2">
+              <label className="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">
+                Property Address
+              </label>
+              <textarea
+                rows={3}
+                value={form.address}
+                onChange={(e) => update("address", e.target.value)}
+                placeholder="House / Flat No, Street, Area, City, State"
+                className="w-full rounded-xl border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-950 px-4 py-2.5 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 outline-none"
+              />
+            </div>
           </Section>
 
-<Section title="Tenant Photo (Optional)">
-  <div className="md:col-span-2">
-    <label className="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">
-      Upload Tenant Photo
-    </label>
+          <Section title="Tenant Photo (Optional)">
+            <div className="md:col-span-2">
+              <label className="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">
+                Upload Tenant Photo
+              </label>
 
-    <div className="flex items-center gap-4">
-      <div className="w-20 h-20 rounded-full border border-dashed flex items-center justify-center bg-gray-50 dark:bg-gray-800">
-        {photo ? (
-          <img
-            src={URL.createObjectURL(photo)}
-            alt="preview"
-            className="w-full h-full object-cover rounded-full"
-          />
-        ) : (
-          <span className="text-xs text-gray-400">No Photo</span>
-        )}
-      </div>
+              <div className="flex items-center gap-4">
+                <div className="w-20 h-20 rounded-full border border-dashed flex items-center justify-center bg-gray-50 dark:bg-gray-800">
+                  {photo ? (
+                    <img
+                      src={URL.createObjectURL(photo)}
+                      alt="preview"
+                      className="w-full h-full object-cover rounded-full"
+                    />
+                  ) : (
+                    <span className="text-xs text-gray-400">No Photo</span>
+                  )}
+                </div>
 
-      <label className="cursor-pointer px-4 py-2 rounded-lg bg-indigo-600 text-white text-sm hover:bg-indigo-700 transition">
-        Choose Photo
-        <input
-          type="file"
-          accept="image/*"
-          hidden
-          onChange={(e) => setPhoto(e.target.files[0])}
-        />
-      </label>
+                <label className="cursor-pointer px-4 py-2 rounded-lg bg-indigo-600 text-white text-sm hover:bg-indigo-700 transition">
+                  Choose Photo
+                  <input
+                    type="file"
+                    accept="image/*"
+                    hidden
+                    onChange={(e) => setPhoto(e.target.files[0])}
+                  />
+                </label>
 
-      {photo && (
-        <button
-          type="button"
-          onClick={() => setPhoto(null)}
-          className="text-sm text-red-500 hover:underline"
-        >
-          Remove
-        </button>
-      )}
-    </div>
-  </div>
-</Section>
+                {photo && (
+                  <button
+                    type="button"
+                    onClick={() => setPhoto(null)}
+                    className="text-sm text-red-500 hover:underline"
+                  >
+                    Remove
+                  </button>
+                )}
+              </div>
+            </div>
+          </Section>
 
 
           {/* Rent Details */}
@@ -244,39 +248,71 @@ async function handleSubmit(e) {
               value={form.gracePeriod}
               onChange={(e) => update("gracePeriod", e.target.value)}
             />
+
+            <label
+              className="
+        flex items-start gap-3 p-4 rounded-lg
+        bg-gray-50 dark:bg-gray-800
+        border border-gray-200 dark:border-gray-700
+        hover:border-indigo-400 dark:hover:border-indigo-500
+        transition cursor-pointer
+      "
+            >
+              <input
+                type="checkbox"
+                checked={startThisMonth}
+                onChange={(e) => setStartThisMonth(e.target.checked)}
+                className="
+          mt-1 h-4 w-4 rounded
+          text-indigo-600
+          focus:ring-indigo-500
+          dark:bg-gray-900 dark:border-gray-600
+        "
+              />
+
+              <div>
+                <p className="text-sm font-medium text-gray-800 dark:text-gray-200">
+                  Start rent collection from this month
+                </p>
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                  If unchecked, the first rent will be generated from the next month
+                </p>
+              </div>
+            </label>
           </Section>
+
 
           {/* Electricity rule */}
           <Section title="Electricity (Optional)">
-  <label className="flex items-center gap-3">
-    <input
-      type="checkbox"
-      checked={electricityEnabled}
-      onChange={(e) => setElectricityEnabled(e.target.checked)}
-    />
-    Enable Electricity Billing
-  </label>
+            <label className="flex items-center gap-3">
+              <input
+                type="checkbox"
+                checked={electricityEnabled}
+                onChange={(e) => setElectricityEnabled(e.target.checked)}
+              />
+              Enable Electricity Billing
+            </label>
 
-  {electricityEnabled && (
-    <>
-      <Input
-        label="Electricity Unit Cost (₹)"
-        type="number"
-        value={unitCost}
-        onChange={(e) => setUnitCost(e.target.value)}
-      />
+            {electricityEnabled && (
+              <>
+                <Input
+                  label="Electricity Unit Cost (₹)"
+                  type="number"
+                  value={unitCost}
+                  onChange={(e) => setUnitCost(e.target.value)}
+                />
 
-      <label className="flex items-center gap-2 text-sm">
-        <input
-          type="checkbox"
-          checked={notifyBeforeBilling}
-          onChange={(e) => setNotifyBeforeBilling(e.target.checked)}
-        />
-        Notify me 24 hours before billing date
-      </label>
-    </>
-  )}
-</Section>
+                <label className="flex items-center gap-2 text-sm">
+                  <input
+                    type="checkbox"
+                    checked={notifyBeforeBilling}
+                    onChange={(e) => setNotifyBeforeBilling(e.target.checked)}
+                  />
+                  Notify me 24 hours before billing date
+                </label>
+              </>
+            )}
+          </Section>
 
 
 
@@ -331,40 +367,40 @@ async function handleSubmit(e) {
             </div>
           </Section>
 
-<Section title="Agreement Document (Optional)">
-  <div className="md:col-span-2">
-    <label className="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">
-      Upload Agreement PDF
-    </label>
+          <Section title="Agreement Document (Optional)">
+            <div className="md:col-span-2">
+              <label className="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">
+                Upload Agreement PDF
+              </label>
 
-    <div className="flex items-center gap-4">
-      <label className="cursor-pointer px-4 py-2 rounded-lg border border-dashed border-gray-300 dark:border-gray-600 text-sm hover:bg-gray-50 dark:hover:bg-gray-800 transition">
-        Choose PDF
-        <input
-          type="file"
-          accept="application/pdf"
-          hidden
-          onChange={(e) => setAgreementFile(e.target.files[0])}
-        />
-      </label>
+              <div className="flex items-center gap-4">
+                <label className="cursor-pointer px-4 py-2 rounded-lg border border-dashed border-gray-300 dark:border-gray-600 text-sm hover:bg-gray-50 dark:hover:bg-gray-800 transition">
+                  Choose PDF
+                  <input
+                    type="file"
+                    accept="application/pdf"
+                    hidden
+                    onChange={(e) => setAgreementFile(e.target.files[0])}
+                  />
+                </label>
 
-      {agreementFile && (
-        <div className="flex items-center gap-3">
-          <span className="text-sm text-gray-600 dark:text-gray-400">
-            {agreementFile.name}
-          </span>
-          <button
-            type="button"
-            onClick={() => setAgreementFile(null)}
-            className="text-sm text-red-500 hover:underline"
-          >
-            Remove
-          </button>
-        </div>
-      )}
-    </div>
-  </div>
-</Section>
+                {agreementFile && (
+                  <div className="flex items-center gap-3">
+                    <span className="text-sm text-gray-600 dark:text-gray-400">
+                      {agreementFile.name}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => setAgreementFile(null)}
+                      className="text-sm text-red-500 hover:underline"
+                    >
+                      Remove
+                    </button>
+                  </div>
+                )}
+              </div>
+            </div>
+          </Section>
 
 
           {/* Rent Increase */}
@@ -394,7 +430,7 @@ async function handleSubmit(e) {
               onChange={(e) =>
                 update("increaseCycle", e.target.value)
               }
-              options={["Select","Yearly", "Monthly"]}
+              options={["Select", "Yearly", "Monthly"]}
             />
           </Section>
 
@@ -417,21 +453,20 @@ async function handleSubmit(e) {
 
           {/* Submit */}
           <button
-  type="submit"
-  disabled={submitting}
-  className={`w-full py-4 rounded-xl font-semibold text-lg shadow-md transition
-    ${
-      submitting
-        ? "bg-gray-400 cursor-not-allowed"
-        : "bg-indigo-600 hover:bg-indigo-700 text-white"
-    }`}
->
-  {submitting ? "Saving..." : "Save Tenant"}
+            type="submit"
+            disabled={submitting}
+            className={`w-full py-4 rounded-xl font-semibold text-lg shadow-md transition
+    ${submitting
+                ? "bg-gray-400 cursor-not-allowed"
+                : "bg-indigo-600 hover:bg-indigo-700 text-white"
+              }`}
+          >
+            {submitting ? "Saving..." : "Save Tenant"}
 
-  {submitting && (
-    <span className="ml-2 inline-block animate-spin">⏳</span>
-  )}
-</button>
+            {submitting && (
+              <span className="ml-2 inline-block animate-spin">⏳</span>
+            )}
+          </button>
 
         </form>
       </div>
