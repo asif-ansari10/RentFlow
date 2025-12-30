@@ -26,7 +26,7 @@ export default function RentsPage() {
   try {
     setRefreshing(true);
 
-    const res = await fetch("/api/cron/generate-rents");
+    const res = await fetch("/api/cron/monthly");
     const data = await res.json();
 
     if (!data.success) {
