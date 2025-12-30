@@ -1,11 +1,14 @@
 "use client";
 
-import dynamic from "next/dynamic";
+export const dynamic = "force-dynamic";
+
+import dynamicImport from "next/dynamic";
 import { Suspense } from "react";
 
-const ResetPassword = dynamic(() => import("@/components/ResetPassword"), {
-  ssr: false,
-});
+const ResetPassword = dynamicImport(
+  () => import("@/components/ResetPassword"),
+  { ssr: false }
+);
 
 export default function ResetPage() {
   return (
